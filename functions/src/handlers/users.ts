@@ -1,0 +1,152 @@
+import {admin, db} from '../util/admin'
+import * as firebase from 'firebase';
+import { fbConfig } from '../util/config';
+import {validateSignUpData, validateLoginData} from '../util/validators';
+import  * as Busboy from 'busboy';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os'; 
+
+
+firebase.initializeApp(fbConfig)
+
+
+export const signUp = (req: any, res: any) => {
+
+    let userId : any;
+    let token: any;
+
+    const newUser = {
+        email : req.body.email,
+        password : req.body.password,
+        confirmPassword : req.body.confirmPassword,
+        handle : req.body.handle,
+    };
+
+    const {valid, errors} = validateSignUpData(newUser)
+
+    if(!valid) return res.status(400).json(errors)
+
+    const noImage = 'blank-profile-picture.svg'
+    
+    db.doc(`/users/${newUser.handle}`).get()
+        .then(doc => {
+            if(doc.exists) {
+                return res.status(400).json({handle:'this handle is already taken'})
+            }
+            else {
+                return firebase.auth()
+                    .createUserWithEmailAndPassword(newUser.email, newUser.password)
+            }
+        })
+        .then( (authUser: firebase.auth.UserCredential) => {
+            userId = authUser.user!.uid
+            return authUser.user!.getIdToken()
+
+        })
+        .then(idToken => {
+            token = idToken;
+            const userCredentials = {
+                handle: newUser.handle,
+                email: newUser.email,
+                createdAt: new Date().toISOString(),
+                imageUrl: `https://firebasestorge.googleapis.com/v0/b/${fbConfig.storageBucket}/o/${noImage}?alt=media`,
+                userId
+            }
+
+             return db.doc(`/users/${newUser.handle}`).set(userCredentials)
+            
+
+        })
+        .then(() => {
+            return res.status(201).json({token})
+        })
+        .catch( error => {
+            console.error(error)
+            if(error.code === "auth/email-already-in-use"){
+                return res.status(400).json({email: 'Email is already in use'})
+            } else {
+                return res.status(500).json({error: error.code})
+            }
+            
+        });
+
+
+};
+
+export const login = (req : any, res: any) => {
+    const user = {
+        email : req.body.email,
+        password: req.body.password
+    };
+
+    const {valid, errors} = validateLoginData(user);
+
+    if(!valid) return res.status(400).json(errors);
+
+    firebase.auth().signInWithEmailAndPassword(user.email, user.password)
+        .then(authUser => {
+            return authUser.user!.getIdToken()
+        })
+        .then((token : string) => {
+            return res.json({token})
+        })
+        .catch(error => {
+            console.error(error)
+            if(error.code === 'auth/wrong-password'){
+                return res.status(403).json({general: 'Wrong credentials, please try again'})
+            } else return res.status(500).json({error: error.code})
+        });
+};
+
+export const uploadImage = (req: any, res:any) => {
+    //const BusBoy = require('busboy');
+    //const path = require('path');
+    //const os = require('os');
+    //const fs = require('fs');
+
+    const busboy = new Busboy({headers: req.headers});
+
+    let imageFileName : string;
+    let imageToBeUploaded: any = {};
+
+    busboy.on('file', (fieldname: string, file: NodeJS.ReadableStream, filename: string, encoding: string, mimetype: string) => {
+        console.log(fieldname);
+        console.log(filename);
+        console.log(mimetype);
+        // my.image.png
+        const imageExtension = filename.split('.')[filename.split('.').length - 1];
+
+        imageFileName = `${Math.round(Math.random()*10000000000)}.${imageExtension}`;
+        //tmpdir stands for "Temporary diectory"
+        const filePath = path.join(os.tmpdir() , imageFileName);
+        
+        imageToBeUploaded = {filePath, mimetype};
+
+        file.pipe(fs.createWriteStream(filePath));
+    });
+
+    busboy.on('finish', () => {
+        admin.storage().bucket().upload(imageToBeUploaded.filePath,{
+            resumable: false,
+            metadata: {
+                metadata: {
+                    contentType: imageToBeUploaded.mimetype
+                }
+            }
+        })
+        .then(() => {
+            // The string "?alt=media" prevents the image to be downloaded instead of only be showed on the browser.
+            const imageUrl = `https://firebasestorge.googleapis.com/v0/b/${fbConfig.storageBucket}/o/${imageFileName}?alt=media`
+            return db.doc(`/users/${req.user.handle}`).update({imageUrl})
+        })
+        .then(() => {
+            return res.json({message: 'Image uploaded successfully'});
+        })
+        .catch(error => {
+            console.error(error)
+            return res.status(500).json({error: error.code})
+        })
+    })
+}
+
