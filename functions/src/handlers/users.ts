@@ -137,7 +137,7 @@ export const uploadImage = (req: any, res:any) => {
         })
         .then(() => {
             // The string "?alt=media" prevents the image to be downloaded instead of only be showed on the browser.
-            const imageUrl = `https://firebasestorge.googleapis.com/v0/b/${fbConfig.storageBucket}/o/${imageFileName}?alt=media`
+            const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${fbConfig.storageBucket}/o/${imageFileName}?alt=media`
             return db.doc(`/users/${req.user.handle}`).update({imageUrl})
         })
         .then(() => {

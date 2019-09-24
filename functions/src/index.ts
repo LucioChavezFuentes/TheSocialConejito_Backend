@@ -18,7 +18,7 @@ app.post('/scream', firebaseAuth, postOneScream );
 //Users Routes
 app.post('/signup', signUp);
 app.post('/login', login);
-app.post('/user/image', firebaseAuth, uploadImage)
+app.post('/user/image', firebaseAuth, uploadImage);
 
 //Makes /api url  and throught it you can manage the expresss modules
 exports.api = functions.https.onRequest(app);
