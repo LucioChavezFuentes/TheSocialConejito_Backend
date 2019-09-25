@@ -50,7 +50,7 @@ export const signUp = (req: any, res: any) => {
                 handle: newUser.handle,
                 email: newUser.email,
                 createdAt: new Date().toISOString(),
-                imageUrl: `https://firebasestorge.googleapis.com/v0/b/${fbConfig.storageBucket}/o/${noImage}?alt=media`,
+                imageUrl: `https://firebasestorage.googleapis.com/v0/b/${fbConfig.storageBucket}/o/${noImage}?alt=media`,
                 userId
             }
 

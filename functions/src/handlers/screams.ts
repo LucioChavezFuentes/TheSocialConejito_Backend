@@ -25,7 +25,7 @@ export const getAllScreams = (req: Request, res: Response) => {
         .catch( error => console.error(error))
 };
 
-export const postOneScream = (req: any, res: Response) => {
+export const postOneScream = (req: Request, res: Response) => {
     const newScream = {
         body: req.body.body,
         userHandle : req.user.handle,

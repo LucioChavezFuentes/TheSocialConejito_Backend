@@ -1,14 +1,17 @@
 import {admin, db} from './admin';
+import { Request, Response, NextFunction } from 'express';
 //import * as express from 'express';
 
-export const firebaseAuth = (req : any, res: any, next : any) => {
+export const firebaseAuth = (req : Request, res: Response, next : NextFunction) => {
     let idToken;
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer ')){
         idToken = req.headers.authorization.split('Bearer ')[1]
     } else {
         console.error('Token not found')
         // 403: Unauthorized method.
-        return res.status(403).json({error:'Unauthorized'});
+        res.status(403).json({error:'Unauthorized'});
+        
+        return
     }
 
     admin.auth().verifyIdToken(idToken)
@@ -22,7 +25,7 @@ export const firebaseAuth = (req : any, res: any, next : any) => {
         })
         .then(userData => {
             req.user.handle = userData.docs[0].data().handle;
-            return next();
+            return next()
         })
         .catch(error => {
             console.error('Error while verifying token', error);
