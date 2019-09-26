@@ -25,7 +25,8 @@ export const firebaseAuth = (req : Request, res: Response, next : NextFunction) 
         })
         .then(userData => {
             req.user.handle = userData.docs[0].data().handle;
-            return next()
+            next()
+            
         })
         .catch(error => {
             console.error('Error while verifying token', error);
