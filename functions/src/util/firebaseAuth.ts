@@ -32,5 +32,4 @@ export const firebaseAuth = (req : Request, res: Response, next : NextFunction) 
             console.error('Error while verifying token', error);
             return res.status(403).json(error);
         });
-
-}
+};

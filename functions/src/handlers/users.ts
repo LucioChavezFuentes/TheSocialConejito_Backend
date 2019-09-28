@@ -1,11 +1,12 @@
 import {admin, db} from '../util/admin'
 import * as firebase from 'firebase';
 import { fbConfig } from '../util/config';
-import {validateSignUpData, validateLoginData} from '../util/validators';
+import {validateSignUpData, validateLoginData, reduceUserDetails} from '../util/validators';
 import  * as Busboy from 'busboy';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os'; 
+import { Request, Response } from 'express';
 
 
 firebase.initializeApp(fbConfig)
@@ -99,6 +100,46 @@ export const login = (req : any, res: any) => {
         });
 };
 
+//Add User Details
+
+export const addUserDetails = (req: Request, res: Response) => {
+    let userDetails = reduceUserDetails(req.body);
+
+    db.doc(`/users/${req.user.handle}`).update(userDetails)
+        .then(() => {
+            return res.json({message: 'Details Updated Successfully'})
+        })
+        .catch(error => {
+            console.error(error)
+            return res.status(500).json({error: error.code})
+        });
+};
+
+//Get Own User Credetails
+export const getAuthenticatedUser = (req: any, res: any) =>{
+    let userData: any = {};
+    db.doc(`/users/${req.user.handle}`).get()
+        .then(doc => {
+            if(doc.exists){
+                userData.credentials = doc.data();
+                return db.collection('likes').where('userHandle', '==', req.user.handle).get()
+            } else return
+        })
+        .then( docLikes => {
+            userData.likes = []
+            docLikes!.forEach( like => {
+                userData.likes.push(like.data())
+            });
+            
+            return res.json(userData);
+        })
+        .catch(error => {
+            console.error(error)
+            return res.status(500).json({error: error.code})
+        })
+};
+
+// Upload an Image User Profile
 export const uploadImage = (req: any, res:any) => {
     //const BusBoy = require('busboy');
     //const path = require('path');
@@ -114,6 +155,10 @@ export const uploadImage = (req: any, res:any) => {
         console.log(fieldname);
         console.log(filename);
         console.log(mimetype);
+        console.log(os.tmpdir());
+        if(mimetype !== 'image/jpeg' && mimetype !== 'image/png' ){
+            return res.status(400).json({error: 'Wrong file type submitted'});
+        }
         // my.image.png
         const imageExtension = filename.split('.')[filename.split('.').length - 1];
 
@@ -148,5 +193,6 @@ export const uploadImage = (req: any, res:any) => {
             return res.status(500).json({error: error.code})
         })
     })
-}
+    busboy.end(req.rawBody)
+};
 

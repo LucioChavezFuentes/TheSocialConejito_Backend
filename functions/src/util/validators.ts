@@ -1,4 +1,6 @@
 
+
+
  const isEmpty = (string: string) => {
     if (string.trim() === '') {
         return true
@@ -14,7 +16,7 @@
     } else { 
         return false;
     }
-}
+};
 
 export const validateSignUpData = (data: any) => {
 
@@ -41,7 +43,7 @@ export const validateSignUpData = (data: any) => {
         errors,
         valid: Object.keys(errors).length === 0 ? true : false 
     }
-}
+};
 
 export const validateLoginData = (data: any) => {
     const errors: any = {};
@@ -53,4 +55,20 @@ export const validateLoginData = (data: any) => {
         errors,
         valid: Object.keys(errors).length === 0 ? true : false 
     }
+};
+
+export const reduceUserDetails = (reqBody: any) => {
+    let userDetails : any = {}
+    
+    if(!isEmpty(reqBody.bio.trim())) userDetails.bio = reqBody.bio
+    if(!isEmpty(reqBody.website.trim())){
+
+        if(reqBody.website.trim().substring(0, 4) !== 'http'){
+            userDetails.website = `http://${reqBody.website.trim()}`
+        } else userDetails.website = reqBody.website; 
+    }
+    if(!isEmpty(reqBody.location.trim())) userDetails.location = reqBody.location
+    
+
+    return userDetails;
 }
