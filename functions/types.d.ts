@@ -1,7 +1,14 @@
+
+interface user  {
+    handle: string;
+    imageUrl: string;
+}
+
 declare namespace Express {
     export interface Request {
-        user: any;
-        rawBody: any
+        user: import('./src/util/admin').admin.auth.DecodedIdToken;
+        rawBody: any;
+        
     }
     
  }

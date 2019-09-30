@@ -31,6 +31,24 @@ let db = {
             createdAt: '2019-09-22T06:19:37.787Z'
 
         }
+    ],
+    likes: [
+        {
+            userHandle: 'user',
+            screamId: '1DsvDyfJjWUdytUKA2e5'
+        }
+    ],
+    notifications: [
+        {
+            recipient: 'user',
+            sender: 'user22',
+            read: true || false,
+            screamId: '1DsvDyfJjWUdytUKA2e5',
+            type: 'like | comment',
+            createdAt: '2019-09-29T09:12:21.281Z'
+
+
+        }
     ]
 }
 
