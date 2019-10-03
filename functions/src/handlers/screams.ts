@@ -15,8 +15,9 @@ export const getAllScreams = (req: Request, res: Response) => {
             data.forEach(doc => {
                 
                 screams.push({
-                    screamdId : doc.id,
+                    
                     ...doc.data(),
+                    screamdId : doc.id,
 
                 })
             })
@@ -80,7 +81,7 @@ export const getScream = (req: any, res: any) => {
 
 //Post One Comment on Scream
 export const postCommentOnScream = (req: Request, res: Response) => {
-    if(req.body.body.trim() === '') res.status(400).json({error: 'Must not be empty'});
+    if(req.body.body.trim() === '') res.status(400).json({comment: 'Must not be empty'});
 
     let newComment = {
         body: req.body.body,

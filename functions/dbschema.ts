@@ -20,7 +20,8 @@ let db = {
             body: 'this is the scream body',
             createdAt: '2019-09-18T22:08:01.691Z',
             likeCount: 5,
-            commentCount: 2
+            commentCount: 2,
+            userImage: "https://firebasestorage.googleapis.com/v0/b/thesocialmono.appspot.com/o/307616521.jpg?alt=media"
         }
     ],
     comments: [

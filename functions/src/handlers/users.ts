@@ -67,7 +67,7 @@ export const signUp = (req: any, res: any) => {
             if(error.code === "auth/email-already-in-use"){
                 return res.status(400).json({email: 'Email is already in use'})
             } else {
-                return res.status(500).json({error: error.code})
+                return res.status(500).json({general: 'Something went worng, please try again later'})
             }
             
         });
@@ -94,9 +94,9 @@ export const login = (req : any, res: any) => {
         })
         .catch(error => {
             console.error(error)
-            if(error.code === 'auth/wrong-password'){
+            //if(error.code === 'auth/wrong-password'){
                 return res.status(403).json({general: 'Wrong credentials, please try again'})
-            } else return res.status(500).json({error: error.code})
+            //} else return res.status(500).json({error: error.code})
         });
 };
 
@@ -115,6 +115,38 @@ export const addUserDetails = (req: Request, res: Response) => {
         });
 };
 
+//Get any user's details
+export const getUserDetails = (req: Request, res: Response) => {
+    let userData : any = {};
+    db.doc(`/users/${req.params.handle}`).get()
+        .then((docUser) => {
+            if(docUser.exists){
+                userData.user = docUser.data()
+                return db.collection('screams').where('userHandle', '==', req.params.handle)
+                    .orderBy('createdAt', 'desc')
+                    .get()
+            } else {
+                res.status(404).json({error: 'User Not Found'})
+                return
+            }
+        })
+        .then((docScreams) => {
+            userData.screams = [];
+            docScreams!.forEach((doc) => {
+                userData.screams.push({
+                    
+                    ...doc.data(),
+                    screamId: doc.id
+                })
+            })
+            return res.json(userData)
+        })
+        .catch((error) => {
+            console.error(error)
+            res.status(500).json({error: error.code})
+        })
+}
+
 //Get Own User Credetails
 export const getAuthenticatedUser = (req: any, res: any) =>{
     let userData: any = {};
@@ -130,7 +162,23 @@ export const getAuthenticatedUser = (req: any, res: any) =>{
             docLikes!.forEach( like => {
                 userData.likes.push(like.data())
             });
+            return db.collection('notifications').where('recipient', '==', req.user.handle)
+                .orderBy('createdAt', 'desc').limit(10).get();
             
+        })
+        .then((docsNotification) => {
+            userData.notifications = []
+            docsNotification.forEach( doc => {
+                userData.notifications.push({
+                    recipient: doc.data().recipient,
+                    sender: doc.data().sender,
+                    read: doc.data().read,
+                    screamId: doc.data().screamId,
+                    type: doc.data().type,
+                    createdAt: doc.data().createdAt,
+                    notificationId: doc.id
+                });
+            });
             return res.json(userData);
         })
         .catch(error => {
@@ -196,3 +244,18 @@ export const uploadImage = (req: any, res:any) => {
     busboy.end(req.rawBody)
 };
 
+export const markNotificationsRead = (req: Request, res: Response) => {
+    let batch = db.batch();
+    req.body.forEach((notificationId: string) => {
+        const notification = db.doc(`/notifications/${notificationId}`)
+        batch.update(notification,{read: true})
+    });
+    batch.commit()
+        .then(() => {
+            return res.json({message: "Notifications marked read"});
+        })
+        .catch(err => {
+            console.error(err)
+            res.status(500).json({error: err.code})
+        })
+}
