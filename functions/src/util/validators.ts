@@ -58,7 +58,7 @@ export const validateLoginData = (data: any) => {
 };
 
 export const reduceUserDetails = (reqBody: any) => {
-    let userDetails : any = {}
+    const userDetails : any = {}
     
     if(!isEmpty(reqBody.bio.trim())) userDetails.bio = reqBody.bio
     if(!isEmpty(reqBody.website.trim())){

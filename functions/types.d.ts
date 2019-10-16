@@ -1,8 +1,4 @@
 
-interface user  {
-    handle: string;
-    imageUrl: string;
-}
 
 declare namespace Express {
     export interface Request {

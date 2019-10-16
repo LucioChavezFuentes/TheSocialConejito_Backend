@@ -103,7 +103,7 @@ export const login = (req : any, res: any) => {
 //Add User Details
 
 export const addUserDetails = (req: Request, res: Response) => {
-    let userDetails = reduceUserDetails(req.body);
+    const userDetails = reduceUserDetails(req.body);
 
     db.doc(`/users/${req.user.handle}`).update(userDetails)
         .then(() => {
@@ -117,7 +117,7 @@ export const addUserDetails = (req: Request, res: Response) => {
 
 //Get any user's details
 export const getUserDetails = (req: Request, res: Response) => {
-    let userData : any = {};
+    const userData : any = {};
     db.doc(`/users/${req.params.handle}`).get()
         .then((docUser) => {
             if(docUser.exists){
@@ -149,7 +149,7 @@ export const getUserDetails = (req: Request, res: Response) => {
 
 //Get Own User Credetails
 export const getAuthenticatedUser = (req: any, res: any) =>{
-    let userData: any = {};
+    const userData: any = {};
     db.doc(`/users/${req.user.handle}`).get()
         .then(doc => {
             if(doc.exists){
@@ -245,7 +245,7 @@ export const uploadImage = (req: any, res:any) => {
 };
 
 export const markNotificationsRead = (req: Request, res: Response) => {
-    let batch = db.batch();
+    const batch = db.batch();
     req.body.forEach((notificationId: string) => {
         const notification = db.doc(`/notifications/${notificationId}`)
         batch.update(notification,{read: true})

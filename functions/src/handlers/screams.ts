@@ -28,6 +28,9 @@ export const getAllScreams = (req: Request, res: Response) => {
 };
 
 export const postOneScream = (req: Request, res: Response) => {
+    if (req.body.body.trim() === '') {
+        res.status(400).json({ body: 'Body must not be empty' });
+      }
     const newScream = {
         body: req.body.body,
         userHandle : req.user.handle,
@@ -83,7 +86,7 @@ export const getScream = (req: any, res: any) => {
 export const postCommentOnScream = (req: Request, res: Response) => {
     if(req.body.body.trim() === '') res.status(400).json({comment: 'Must not be empty'});
 
-    let newComment = {
+    const newComment = {
         body: req.body.body,
         createdAt: new Date().toISOString(),
         screamId: req.params.screamId,
@@ -124,7 +127,7 @@ export const likeScream = (req: Request, res: Response) => {
         .then( doc => {
             if(doc.exists){
                 screamData = doc.data()
-                //screamData!.screamId = doc.id
+                screamData.screamId = doc.id
                 return likeDocument.get()
             }
             else{
@@ -133,7 +136,8 @@ export const likeScream = (req: Request, res: Response) => {
             }
         })
         .then(likeDoc => {
-            if(likeDoc!.empty){
+            //@ts-ignore Typescript thinks likeDoc may be null.
+            if(likeDoc.empty){
                 return db.collection('likes').add({
                     screamId: req.params.screamId,
                     userHandle: req.user.handle
@@ -171,7 +175,7 @@ export const unlikeScream = (req: Request, res: Response) => {
         .then( doc => {
             if(doc.exists){
                 screamData = doc.data()
-                //screamData!.screamId = doc.id
+                screamData.screamId = doc.id
                 return likeDocument.get()
             }
             else{
@@ -180,8 +184,8 @@ export const unlikeScream = (req: Request, res: Response) => {
             }
         })
         .then(likeDoc => {
-            
-            if(likeDoc!.empty){
+            //@ts-ignore Typescript thinks likeDoc may be null.
+            if(likeDoc.empty){
                 return res.status(400).json({error: 'Scream not liked'});
                 
             } else {
