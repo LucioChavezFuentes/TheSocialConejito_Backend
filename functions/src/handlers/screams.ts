@@ -29,7 +29,8 @@ export const getAllScreams = (req: Request, res: Response) => {
 
 export const postOneScream = (req: Request, res: Response) => {
     if (req.body.body.trim() === '') {
-        res.status(400).json({ body: 'Body must not be empty' });
+         res.status(400).json({ body: 'Body must not be empty' });
+         return
       }
     const newScream = {
         body: req.body.body,
@@ -84,7 +85,10 @@ export const getScream = (req: any, res: any) => {
 
 //Post One Comment on Scream
 export const postCommentOnScream = (req: Request, res: Response) => {
-    if(req.body.body.trim() === '') res.status(400).json({comment: 'Must not be empty'});
+    if(req.body.body.trim() === ''){
+        res.status(400).json({comment: 'Must not be empty'});
+        return
+    } 
 
     const newComment = {
         body: req.body.body,
@@ -105,7 +109,7 @@ export const postCommentOnScream = (req: Request, res: Response) => {
             return db.collection('comments').add(newComment)
         })
         .then(() => {
-            res.json(newComment)
+           return res.json(newComment)
         })
         .catch((error) => {
             console.error(error)

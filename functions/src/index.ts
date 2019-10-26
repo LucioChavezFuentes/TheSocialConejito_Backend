@@ -3,9 +3,10 @@
 import * as functions from 'firebase-functions';
 import * as express from 'express'
 import {db} from './util/admin';
+const cors = require('cors');
 
 const app: express.Application = express();
-
+app.use(cors());
 //Don't use 'firebase/app'
 //TODO: Investigate why 'firebase/app' does not work here and why it works in UI Project
 import {getAllScreams, postOneScream, getScream, postCommentOnScream, likeScream, unlikeScream, deleteScream} from './handlers/screams';
