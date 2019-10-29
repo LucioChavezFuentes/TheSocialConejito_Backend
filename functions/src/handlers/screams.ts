@@ -98,18 +98,30 @@ export const postCommentOnScream = (req: Request, res: Response) => {
         userImage: req.user.imageUrl
     }
 
+    let dataScream;
+
     db.doc(`/screams/${req.params.screamId}`).get()
         .then((doc) => {
             if(!doc.exists){
                  res.status(404).json({error: 'scream not found'})
+                 return
             }
             return doc.ref.update({commentCount: doc.data()!.commentCount + 1});
         })
         .then(() => {
+            
             return db.collection('comments').add(newComment)
         })
         .then(() => {
-           return res.json(newComment)
+            return db.doc(`/screams/${req.params.screamId}`).get()
+           
+        })
+        .then((docScreamUpdated) => {
+            dataScream = docScreamUpdated.data()
+            return res.json({
+                newComment,
+                dataScream
+            })
         })
         .catch((error) => {
             console.error(error)
